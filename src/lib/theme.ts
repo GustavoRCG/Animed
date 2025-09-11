@@ -1,13 +1,13 @@
 export const theme = {
   colors: {
-    primary: '#32CD32', // #32CD32 from figma
-    primaryDark: '#106810',
-    accent: '#274797',
-    background: '#F1F5F4',
-    surface: '#FFFFFF',
-    gray: '#717f7f',
-    text: '#0a0a0a',
-    danger: '#DF5951',
+    primary: "#32CD32", // #32CD32 from figma
+    primaryDark: "#106810",
+    accent: "#274797",
+    background: "#F1F5F4",
+    surface: "#FFFFFF",
+    gray: "#717f7f",
+    text: "#0a0a0a",
+    danger: "#DF5951",
   },
   spacing: (value: number) => value * 8,
   radii: {
