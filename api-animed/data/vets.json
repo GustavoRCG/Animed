@@ -1,0 +1,13 @@
+[
+  {
+    "id": "1",
+    "name": "Dr. Gustavo",
+    "specialty": "Cirurgia de Pequenos Animais"
+  },
+  {
+    "id": "2",
+    "name": "Dra. Ana Beatriz",
+    "specialty": "Cardiologia Veterinária"
+  },
+  { "id": "3", "name": "Dr. Antônio", "specialty": "Dermatologia Veterinária" }
+]
