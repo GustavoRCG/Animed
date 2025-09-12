@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "vetName": "Dr. Gustavo",
+    "especialidade": "Cirurgia",
+    "serviceName": "Castração de Pequenos Animais",
+    "price": 350
+  },
+  {
+    "id": 2,
+    "vetName": "Dra. Ana Beatriz",
+    "especialidade": "Cardiologia",
+    "serviceName": "Consulta Cardiológica",
+    "price": 250.5
+  },
+  {
+    "id": 3,
+    "vetName": "Dr. Antônio",
+    "especialidade": "Dermatologia",
+    "serviceName": "Tratamento Dermatológico",
+    "price": 180
+  }
+]
