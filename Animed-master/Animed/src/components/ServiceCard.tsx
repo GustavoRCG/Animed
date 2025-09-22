@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { theme } from "../lib/theme";
+import { useTheme } from "../components/ThemeContext";
 
 export default function ServiceCard({
   name,
@@ -11,14 +12,30 @@ export default function ServiceCard({
   price: string;
   onPress?: () => void;
 }) {
+  const { theme: appTheme } = useTheme();
+
   return (
-    <View style={styles.row}>
+    <View
+      style={[
+        styles.row,
+        {
+          backgroundColor: theme.colors[appTheme].surface,
+          shadowColor: appTheme === "dark" ? "#fff" : "#000",
+        },
+      ]}
+    >
       <View style={styles.left}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.price}>{price}</Text>
+        <Text style={[styles.name, { color: theme.colors[appTheme].text }]}>
+          {name}
+        </Text>
+        <Text
+          style={[styles.price, { color: theme.colors[appTheme].primaryDark }]}
+        >
+          {price}
+        </Text>
       </View>
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, { backgroundColor: theme.colors[appTheme].primaryDark }]}
         onPress={onPress}
         activeOpacity={0.8}
       >
@@ -30,7 +47,6 @@ export default function ServiceCard({
 
 const styles = StyleSheet.create({
   row: {
-    backgroundColor: theme.colors.surface,
     paddingVertical: 18,
     paddingHorizontal: 16,
     flexDirection: "row",
@@ -43,7 +59,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     
     // Sombra para iOS
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
@@ -55,11 +70,9 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: "700",
     fontSize: theme.typography.body,
-    color: theme.colors.text,
   },
-  price: { color: theme.colors.primaryDark, marginTop: 6, fontSize: 13 },
+  price: { marginTop: 6, fontSize: 13 },
   button: {
-    backgroundColor: theme.colors.primaryDark,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,

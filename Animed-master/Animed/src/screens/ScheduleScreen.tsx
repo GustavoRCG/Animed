@@ -4,47 +4,39 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   SafeAreaView,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+// Adicionei StackActions aqui
+import { useRoute, useNavigation, StackActions } from "@react-navigation/native";
 import { theme } from "../lib/theme";
+import { useTheme } from "../components/ThemeContext";
 import PrimaryButton from "../components/PrimaryButton";
 import { useReservations } from "../hooks/ReservationsProvider";
 import { FontAwesome5 } from "@expo/vector-icons";
 
-
-const MOCK_TIMES = ["09:00", "10:00", "11:00", "14:00", "15:00"];
+const WEEK_DAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 export default function ScheduleScreen() {
   const route: any = useRoute();
   const navigation: any = useNavigation();
   const { addReservation } = useReservations();
-  const vet = route.params?.vet ?? { name: "Dra. Nise da Silveira" };
+  const { theme: appTheme } = useTheme();
+
+  const today = new Date();
+  const initialDate = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const vet = route.params?.vet ?? { nome: "Veterinário", availableDays: [], availableTimes: [] };
   const service = route.params?.service ?? { name: "Consulta" };
 
-
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(initialDate);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [time, setTime] = useState<string | null>(null);
 
- 
   const monthNames = [
-    "JANEIRO",
-    "FEVEREIRO",
-    "MARÇO",
-    "ABRIL",
-    "MAIO",
-    "JUNHO",
-    "JULHO",
-    "AGOSTO",
-    "SETEMBRO",
-    "OUTUBRO",
-    "NOVEMBRO",
-    "DEZEMBRO",
+    "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", 
+    "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO",
   ];
 
- 
   const goToPreviousMonth = () => {
     setCurrentDate(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
@@ -59,16 +51,29 @@ export default function ScheduleScreen() {
     setSelectedDay(null);
   };
 
-  
   const getDaysInMonth = (year: number, month: number) => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    return Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const emptyDays = Array(firstDayOfMonth).fill(null);
+    const actualDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    return [...emptyDays, ...actualDays];
   };
 
   const days = getDaysInMonth(
     currentDate.getFullYear(),
     currentDate.getMonth()
   );
+
+  const isDayAvailable = (day: number) => {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const dayOfWeek = date.getDay();
+    const isPastDate = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    return vet.availableDays?.includes(dayOfWeek) && !isPastDate;
+  };
+
+  const isPastMonth = currentDate.getFullYear() < today.getFullYear() || 
+                      (currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() <= today.getMonth());
 
   const confirm = () => {
     if (!selectedDay || !time) {
@@ -80,68 +85,108 @@ export default function ScheduleScreen() {
     ).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`;
 
     addReservation({
-      vetName: vet.name,
+      vetName: vet.nome, 
       serviceName: service.name,
       dateISO,
       time: time,
     });
-    navigation.navigate("Main", { screen: "Calendar" });
+    
+    // CORREÇÃO: Usa StackActions.replace para redefinir a navegação
+    navigation.dispatch(
+      StackActions.replace("Main", {
+        screen: "Calendar"
+      })
+    );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors[appTheme].background }]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
-          <FontAwesome5 name="arrow-left" size={24} color={theme.colors.primaryDark} />
+          <FontAwesome5 name="arrow-left" size={24} color={theme.colors[appTheme].primaryDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Fazer uma reserva</Text>
+        <Text style={[styles.headerTitle, { color: theme.colors[appTheme].primaryDark }]}>Fazer uma reserva</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.vetTitle}>{vet.name}</Text>
-        <View style={styles.calendarCard}>
+        <Text style={[styles.vetTitle, { color: theme.colors[appTheme].text }]}>{vet.nome}</Text>
+        <View style={[styles.calendarCard, { 
+          backgroundColor: theme.colors[appTheme].surface,
+          shadowColor: appTheme === 'dark' ? '#000' : '#000',
+        }]}>
           <View style={styles.calendarHeader}>
-            <TouchableOpacity onPress={goToPreviousMonth}>
-              <FontAwesome5 name="chevron-left" size={18} color={theme.colors.gray} />
+            <TouchableOpacity onPress={goToPreviousMonth} disabled={isPastMonth}>
+              <FontAwesome5 name="chevron-left" size={18} color={isPastMonth ? theme.colors[appTheme].grayLight : theme.colors[appTheme].gray} />
             </TouchableOpacity>
-            <Text style={styles.month}>
+            <Text style={[styles.month, { color: theme.colors[appTheme].gray }]}>
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </Text>
             <TouchableOpacity onPress={goToNextMonth}>
-              <FontAwesome5 name="chevron-right" size={18} color={theme.colors.gray} />
+              <FontAwesome5 name="chevron-right" size={18} color={theme.colors[appTheme].gray} />
             </TouchableOpacity>
           </View>
+          
+          <View style={styles.weekDaysRow}>
+            {WEEK_DAYS.map((day, index) => (
+              <Text key={index} style={[styles.weekDayText, { color: theme.colors[appTheme].gray }]}>{day}</Text>
+            ))}
+          </View>
+
           <View style={styles.grid}>
-            {days.map((d) => (
-              <TouchableOpacity
-                key={d}
-                onPress={() => setSelectedDay(d)}
-                style={[
-                  styles.day,
-                  selectedDay === d ? styles.dayActive : null,
-                ]}
-              >
-                <Text
+            {days.map((d, index) => {
+              const available = d !== null && isDayAvailable(d);
+              const isSelected = selectedDay === d;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setSelectedDay(d)}
+                  disabled={!available}
                   style={[
-                    styles.dayText,
-                    selectedDay === d ? styles.dayTextActive : null,
+                    styles.day,
+                    d === null && styles.dayHidden,
+                    available && !isSelected ? {
+                        borderWidth: 1,
+                        borderColor: theme.colors[appTheme].primaryDark,
+                      }
+                      : null,
+                    available && isSelected ? {
+                        backgroundColor: theme.colors[appTheme].primaryDark,
+                        shadowColor: "#000",
+                        shadowOpacity: 0.12,
+                        elevation: 3,
+                      }
+                      : null,
                   ]}
                 >
-                  {d}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.dayText,
+                      !available ? styles.dayTextUnavailable : null,
+                      isSelected ? styles.dayTextActive : null,
+                      isSelected ? { color: 'white' } : null,
+                      { color: !available ? theme.colors[appTheme].gray : theme.colors[appTheme].text }
+                    ]}
+                  >
+                    {d}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>Horário</Text>
+        <Text style={[styles.sectionLabel, { color: theme.colors[appTheme].gray }]}>Horário</Text>
         <View style={styles.timesRow}>
-          {MOCK_TIMES.map((t) => (
+          {vet.availableTimes?.map((t, index) => (
             <TouchableOpacity
-              key={t}
+              key={index}
               style={[
                 styles.timePill,
                 time === t ? styles.timePillActive : null,
+                {
+                  backgroundColor: time === t ? theme.colors[appTheme].primaryDark : theme.colors[appTheme].surface,
+                  borderColor: appTheme === 'dark' ? theme.colors[appTheme].border : '#eee',
+                },
               ]}
               onPress={() => setTime(t)}
             >
@@ -149,6 +194,7 @@ export default function ScheduleScreen() {
                 style={[
                   styles.timeText,
                   time === t ? styles.timeTextActive : null,
+                  { color: time === t ? 'white' : theme.colors[appTheme].text },
                 ]}
               >
                 {t}
@@ -170,7 +216,7 @@ export default function ScheduleScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
+  container: { flex: 1 },
   header: {
     height: 60,
     alignItems: "center",
@@ -180,17 +226,14 @@ const styles = StyleSheet.create({
   },
   back: { position: "absolute", left: 16, top: 18, padding: 8 },
   headerTitle: {
-    color: theme.colors.primaryDark,
     fontWeight: "800",
     fontSize: theme.typography.h2,
   },
   content: { flex: 1, padding: 16 },
-  vetTitle: { fontWeight: "700", color: theme.colors.text, marginBottom: 12 },
+  vetTitle: { fontWeight: "700", marginBottom: 12 },
   calendarCard: {
-    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 14,
-    shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
@@ -201,43 +244,51 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  month: { color: theme.colors.gray, fontWeight: "700", fontSize: 16 },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center" },
+  month: { fontWeight: "700", fontSize: 16 },
+  weekDaysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+  },
+  weekDayText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    flex: 1,
+    textAlign: 'center',
+  },
+  grid: { 
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+  },
   day: {
-    width: 40,
-    height: 40,
+    width: "14.28%",
+    aspectRatio: 1,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    margin: 6,
   },
-  dayActive: {
-    backgroundColor: theme.colors.primary,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    elevation: 3,
+  dayHidden: {
+    opacity: 0,
   },
-  dayText: { color: theme.colors.text },
-  dayTextActive: { color: "white", fontWeight: "700" },
+  dayText: {},
+  dayTextActive: { fontWeight: "700" },
+  dayTextUnavailable: {},
   sectionLabel: {
     marginTop: 18,
     marginBottom: 8,
-    color: theme.colors.gray,
     fontWeight: "700",
   },
   timesRow: { flexDirection: "row", flexWrap: "wrap" },
   timePill: {
-    backgroundColor: theme.colors.surface,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
     marginRight: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#eee",
   },
-  timePillActive: { backgroundColor: theme.colors.primaryDark },
-  timeText: { color: theme.colors.text },
-  timeTextActive: { color: "white", fontWeight: "700" },
+  timePillActive: {},
+  timeText: {},
+  timeTextActive: { fontWeight: "700" },
   footer: { padding: 16, backgroundColor: "transparent" },
 });

@@ -14,6 +14,7 @@ import { theme } from "../lib/theme";
 import PrimaryButton from "../components/PrimaryButton";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../lib/firebaseConfig";
+import { useTheme } from "../components/ThemeContext";
 
 export default function SignupScreen() {
   const navigation: any = useNavigation();
@@ -21,6 +22,7 @@ export default function SignupScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const { theme: appTheme } = useTheme();
 
   const handleSignup = async () => {
     if (!email || !password) {
@@ -68,39 +70,39 @@ export default function SignupScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors[appTheme].background }]}>
       <View style={styles.logoContainer}>
         <Image
           source={require("../img/Logo1.png")}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.logoTitle}>Criar Conta</Text>
+        <Text style={[styles.logoTitle, { color: theme.colors[appTheme].primaryDark }]}>Criar Conta</Text>
       </View>
 
       <View style={styles.form}>
         <TextInput
           placeholder="Nome"
-          placeholderTextColor={theme.colors.gray}
+          placeholderTextColor={theme.colors[appTheme].gray}
           value={name}
           onChangeText={setName}
-          style={styles.input}
+          style={[styles.input, { color: theme.colors[appTheme].textPrimary }]}
         />
         <TextInput
           placeholder="E-mail"
-          placeholderTextColor={theme.colors.gray}
+          placeholderTextColor={theme.colors[appTheme].gray}
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
+          style={[styles.input, { color: theme.colors[appTheme].textPrimary }]}
           keyboardType="email-address"
           autoCapitalize="none"
         />
         <TextInput
           placeholder="Senha"
-          placeholderTextColor={theme.colors.gray}
+          placeholderTextColor={theme.colors[appTheme].gray}
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
+          style={[styles.input, { color: theme.colors[appTheme].textPrimary }]}
           secureTextEntry
         />
         <PrimaryButton title="Criar Conta" onPress={handleSignup} />
@@ -109,22 +111,22 @@ export default function SignupScreen() {
       <View style={styles.bottomContainer}>
         <View style={styles.termsContainer}>
           <TouchableOpacity
-            style={styles.checkbox}
+            style={[styles.checkbox, { borderColor: theme.colors[appTheme].gray }]}
             onPress={() => setTermsAccepted(!termsAccepted)}
           >
-            {termsAccepted && <View style={styles.checkboxInner} />}
+            {termsAccepted && <View style={[styles.checkboxInner, { backgroundColor: theme.colors[appTheme].primary }]} />}
           </TouchableOpacity>
-          <Text style={styles.termsText}>
+          <Text style={[styles.termsText, { color: theme.colors[appTheme].textSecondary }]}>
             Eu aceito os{" "}
             <Text
-              style={styles.linkText}
+              style={[styles.linkText, { color: theme.colors[appTheme].primary }]}
               onPress={handleLinkPress}
             >
               Termos de serviço
             </Text>{" "}
             e{"\n"}
             <Text
-              style={styles.linkText}
+              style={[styles.linkText, { color: theme.colors[appTheme].primary }]}
               onPress={handleLinkPress}
             >
               Políticas de privacidade
@@ -133,9 +135,9 @@ export default function SignupScreen() {
         </View>
 
         <View style={styles.linkContainer}>
-          <Text style={styles.alreadyHaveAccountText}>Já tenho conta.</Text>
+          <Text style={[styles.alreadyHaveAccountText, { color: theme.colors[appTheme].gray }]}>Já tenho conta.</Text>
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginLink}> Fazer login.</Text>
+            <Text style={[styles.loginLink, { color: theme.colors[appTheme].primary }]}> Fazer login.</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -146,7 +148,6 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
     alignItems: "center",
     padding: 24,
     justifyContent: "space-between",
@@ -162,7 +163,6 @@ const styles = StyleSheet.create({
   },
   logoTitle: {
     fontSize: 28,
-    color: theme.colors.primaryDark,
     fontWeight: "800",
   },
   form: {
@@ -172,10 +172,9 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "transparent",
     padding: 12,
-    borderBottomColor: theme.colors.accent,
+    borderBottomColor: theme.colors.light.accent, 
     borderBottomWidth: 2,
     marginBottom: 24,
-    color: theme.colors.textPrimary,
   },
   bottomContainer: {
     alignItems: "center",
@@ -191,7 +190,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: theme.colors.gray,
     marginRight: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -200,14 +198,11 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 2,
-    backgroundColor: theme.colors.primary,
   },
   termsText: {
-    color: theme.colors.textSecondary,
     fontSize: 14,
   },
   linkText: {
-    color: theme.colors.primary,
     fontWeight: "bold",
   },
   linkContainer: {
@@ -215,11 +210,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   alreadyHaveAccountText: {
-    color: theme.colors.gray,
     fontSize: 14,
   },
   loginLink: {
-    color: theme.colors.primary,
     fontWeight: "bold",
     fontSize: 14,
   },

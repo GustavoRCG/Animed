@@ -8,18 +8,20 @@ import {
   Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { theme } from "../lib/theme";
-import PrimaryButton from "../components/PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../lib/firebaseConfig";
 import { Logo1 } from "src/convex/_generated/assets";
 
+import { useTheme } from "../components/ThemeContext";
+import { theme } from "../lib/theme";
+import PrimaryButton from "../components/PrimaryButton";
 
 
 export default function LoginScreen() {
   const navigation: any = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { theme: appTheme } = useTheme();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -38,7 +40,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors[appTheme].background }]}>
       
       <View style={styles.logoContainer}>
       
@@ -54,10 +56,13 @@ export default function LoginScreen() {
       
         <TextInput
           placeholder="E-mail"
-          placeholderTextColor={theme.colors.gray} 
+          placeholderTextColor={theme.colors[appTheme].gray} 
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
+          style={[styles.input, { 
+            color: theme.colors[appTheme].textPrimary, 
+            borderBottomColor: theme.colors[appTheme].accent 
+          }]}
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -65,10 +70,13 @@ export default function LoginScreen() {
         
         <TextInput
           placeholder="Senha"
-          placeholderTextColor={theme.colors.gray} 
+          placeholderTextColor={theme.colors[appTheme].gray} 
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
+          style={[styles.input, { 
+            color: theme.colors[appTheme].textPrimary, 
+            borderBottomColor: theme.colors[appTheme].accent 
+          }]}
           secureTextEntry
         />
 
@@ -77,9 +85,13 @@ export default function LoginScreen() {
 
         
         <View style={styles.linkContainer}>
-          <Text style={styles.textLink}>Não tenho conta.</Text>
+          <Text style={[styles.textLink, { color: theme.colors[appTheme].textSecondary }]}>
+            Não tenho conta.
+          </Text>
           <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-            <Text style={styles.link}> Criar conta agora.</Text>
+            <Text style={[styles.link, { color: theme.colors[appTheme].primary }]}> 
+              Criar conta agora.
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -90,7 +102,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
     alignItems: "center",
     padding: 24,
   },
@@ -105,7 +116,9 @@ const styles = StyleSheet.create({
   },
   logoTitle: {
     fontSize: 28,
-    color: theme.colors.primaryDark,
+    // Este estilo só será visível se você tiver um <Text> com este estilo
+    // A cor agora é dinâmica, baseada no tema
+    color: 'black', 
     fontWeight: "800",
   },
   form: { 
@@ -115,10 +128,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: 'transparent', 
     padding: 12,
-    borderBottomColor: theme.colors.accent, 
     borderBottomWidth: 2, 
     marginBottom: 24, 
-    color: theme.colors.textPrimary, 
   },
   linkContainer: {
     flexDirection: 'row',
@@ -126,11 +137,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   textLink: {
-    color: theme.colors.textSecondary,
     fontSize: 14,
   },
   link: {
-    color: theme.colors.primary,
     fontWeight: 'bold',
     fontSize: 14,
   },

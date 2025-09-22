@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { theme } from "../lib/theme";
+import { useTheme } from "../components/ThemeContext";
 
 export default function VetCard({
   name,
@@ -13,19 +14,31 @@ export default function VetCard({
   avatarUrl: string;
   onPress?: () => void;
 }) {
-
+  const { theme: appTheme } = useTheme();
 
   return (
-    <View style={styles.card}>
-      <Image
-        source={{ uri: avatarUrl }}
-        style={styles.avatar}
-      />
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors[appTheme].surface,
+          shadowColor: appTheme === "dark" ? "#fff" : "#000",
+        },
+      ]}
+    >
+      <Image source={{ uri: avatarUrl }} style={styles.avatar} />
       <View style={{ flex: 1 }}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.specialty}>{specialty}</Text>
+        <Text style={[styles.name, { color: theme.colors[appTheme].text }]}>
+          {name}
+        </Text>
+        <Text style={[styles.specialty, { color: theme.colors[appTheme].gray }]}>
+          {specialty}
+        </Text>
       </View>
-      <TouchableOpacity style={styles.button} onPress={onPress}>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors[appTheme].primaryDark }]}
+        onPress={onPress}
+      >
         <Text style={styles.buttonText}>Serviços</Text>
       </TouchableOpacity>
     </View>
@@ -34,13 +47,11 @@ export default function VetCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.md,
     padding: 12,
     marginVertical: 8,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -55,15 +66,12 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: "700",
     fontSize: theme.typography.body,
-    color: theme.colors.text,
   },
   specialty: {
-    color: theme.colors.gray,
     fontSize: theme.typography.small,
     marginTop: 2,
   },
   button: {
-    backgroundColor: theme.colors.primaryDark,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
