@@ -1,46 +1,33 @@
-// src/data/api.js
-import { API_URL } from "../data/config";
+import axios from 'axios';
+import { Platform } from 'react-native';
 
-/**
- * Função auxiliar para fazer fetch com timeout
- */
-async function fetchWithTimeout(resource, { timeout = 8000, ...options } = {}) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
+// Endereço IP da sua máquina.
+// Use '192.168.18.11' para o seu celular, como você confirmou.
+const YOUR_LOCAL_IP_ADDRESS = '192.168.18.11'; 
 
-  try {
-    const res = await fetch(resource, { ...options, signal: controller.signal });
-    return res;
-  } finally {
-    clearTimeout(id);
-  }
+// Esta é a lógica que define a URL da API automaticamente
+let apiUrl;
+
+if (Platform.OS === 'android') {
+  // Para o emulador Android
+  apiUrl = 'http://10.0.2.2:3000/api/vets';
+} else if (Platform.OS === 'ios') {
+  // Para o simulador iOS
+  apiUrl = 'http://localhost:3000/api/vets';
+} else {
+  // Para dispositivos físicos (seu celular, por exemplo) e para o Web
+  apiUrl = `http://${YOUR_LOCAL_IP_ADDRESS}:3000/api/vets`;
 }
 
+// A sua tela VetsScreen importará esta constante e a função getVets
+export const API_URL = apiUrl;
 
-/**
- * Busca veterinários da API
- */
-export async function getVets() {
+export const getVets = async () => {
   try {
-    const res = await fetchWithTimeout(`${API_URL}/vets`);
-    const json = await res.json().catch(() => ({}));
-
-    if (!res.ok || !json?.success) {
-      const msg = json?.message || `Erro HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return json.data; // Retorna o array de veterinários
-  } catch (err) {
-    console.error("[getVets] Falha ao buscar veterinários:", err);
-
-    if (err.name === "AbortError") {
-      // Erro de timeout ou API inacessível
-      throw new Error(
-        "Não foi possível conectar à API. Verifique se o dispositivo está na mesma rede do servidor e se o IP/porta estão corretos."
-      );
-    }
-
-    throw err;
+    const response = await axios.get(API_URL);
+    return response.data;
+  } catch (error) {
+    console.error("[getVets] Falha na chamada da API:", error);
+    throw error;
   }
-}
+};

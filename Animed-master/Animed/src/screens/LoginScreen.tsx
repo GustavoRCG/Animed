@@ -6,9 +6,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert, // Importa o Alert para exibir mensagens
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"; // Importa a nova função
 import { auth } from "../lib/firebaseConfig";
 import { Logo1 } from "src/convex/_generated/assets";
 
@@ -36,6 +37,22 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.log("Erro no login:", error.message);
       alert("Erro: " + error.message);
+    }
+  };
+
+  // Nova função para redefinir a senha
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert("Erro", "Por favor, digite seu e-mail para redefinir a senha.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      Alert.alert("E-mail Enviado", "Um e-mail de redefinição de senha foi enviado para " + email);
+    } catch (error: any) {
+      console.error("Erro ao enviar e-mail de redefinição:", error.message);
+      Alert.alert("Erro", "Não foi possível enviar o e-mail. Verifique se o endereço está correto.");
     }
   };
 
@@ -80,6 +97,10 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
+        {/* Botão para a função de esqueci minha senha */}
+        <TouchableOpacity style={styles.forgotPasswordButton} onPress={handleForgotPassword}>
+            <Text style={[styles.forgotPasswordText, { color: theme.colors[appTheme].primary }]}>Esqueci minha senha?</Text>
+        </TouchableOpacity>
 
         <PrimaryButton title="Acessar" onPress={handleLogin} />
 
@@ -116,8 +137,6 @@ const styles = StyleSheet.create({
   },
   logoTitle: {
     fontSize: 28,
-    // Este estilo só será visível se você tiver um <Text> com este estilo
-    // A cor agora é dinâmica, baseada no tema
     color: 'black', 
     fontWeight: "800",
   },
@@ -141,6 +160,13 @@ const styles = StyleSheet.create({
   },
   link: {
     fontWeight: 'bold',
+    fontSize: 14,
+  },
+  forgotPasswordButton: {
+    alignSelf: 'flex-end', 
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
     fontSize: 14,
   },
 });

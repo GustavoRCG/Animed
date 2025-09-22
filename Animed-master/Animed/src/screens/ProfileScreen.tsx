@@ -67,7 +67,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors[appTheme].background }]}>
-      <View style={[styles.mainHeader, { backgroundColor: theme.colors[appTheme].primary }]}>
+      <View style={[styles.mainHeader, { backgroundColor: theme.colors[appTheme].primaryDark }]}>
         <Text style={[styles.headerTitle, { color: theme.colors[appTheme].textPerfil }]}>Meu Perfil</Text>
         <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle}>
           <Ionicons
@@ -159,12 +159,12 @@ const styles = StyleSheet.create({
   },
   profileImage: { width: 116, height: 116, borderRadius: 58, resizeMode: "cover", borderWidth: 2 },
   infoCard: {
-    // Esta parte foi ajustada para ficar abaixo do wallpaper
+    
     padding: 20,
     marginHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    marginTop: 20, // Distância do papel de parede
+    marginTop: 20, 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
