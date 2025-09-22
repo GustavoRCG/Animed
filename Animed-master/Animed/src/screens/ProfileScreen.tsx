@@ -10,41 +10,35 @@ import PrimaryButton from "../components/PrimaryButton";
 import { useTheme } from "../components/ThemeContext";
 import { theme } from "../lib/theme";
 import { ModoClaro, ModoEscuro } from "src/convex/_generated/assets";
+import { updateProfile } from "firebase/auth"; // Importa a nova função
 
 const lightWallpaper = ModoClaro;
 const darkWallpaper = ModoEscuro;
 
 export default function ProfileScreen() {
   const navigation: any = useNavigation();
-  const user = auth.currentUser;
+  const [user, setUser] = useState(auth.currentUser); // Usa o estado para o usuário
   const [uploading, setUploading] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const { theme: appTheme, toggleTheme } = useTheme();
 
-  // 1. O useEffect carrega a foto com base no UID do usuário
   useEffect(() => {
-    const loadPhoto = async () => {
-      if (user && user.uid) { // Verifica se há um usuário logado
-        try {
-          const uri = await AsyncStorage.getItem(`@user_photo_${user.uid}`);
-          if (uri) {
-            setPhotoUri(uri);
-          } else {
-            // Limpa a foto se o novo usuário não tiver uma
-            setPhotoUri(null);
-          }
-        } catch (e) {
-          console.log("Erro ao carregar foto local:", e);
-        }
+    // Listener para mudanças de estado de autenticação
+    const unsubscribe = auth.onAuthStateChanged(firebaseUser => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        // Carrega a URL da foto diretamente do Firebase
+        setPhotoUri(firebaseUser.photoURL);
       } else {
-        // Limpa a foto se o usuário deslogar
         setPhotoUri(null);
       }
-    };
-    loadPhoto();
-  }, [user]); // O efeito é executado sempre que o objeto 'user' muda
+    });
 
-  // 2. A função para escolher a foto a salva com o UID
+    // Limpeza do listener ao desmontar o componente
+    return () => unsubscribe();
+  }, []);
+
+  // 2. A função para escolher a foto a salva no Firebase e localmente
   const handleChoosePhoto = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -64,13 +58,16 @@ export default function ProfileScreen() {
       if (source.uri) {
         setUploading(true);
         try {
-          if (user && user.uid) { // Salva a foto apenas se o usuário tiver um UID
-            await AsyncStorage.setItem(`@user_photo_${user.uid}`, source.uri);
+          if (user) {
+            // Envia a URL da foto para o Firebase
+            await updateProfile(user, { photoURL: source.uri });
+
+            // Atualiza o estado local e exibe a mensagem
             setPhotoUri(source.uri);
-            Alert.alert("Sucesso", "Foto de perfil atualizada localmente!");
+            Alert.alert("Sucesso", "Foto de perfil atualizada!");
           }
         } catch (e) {
-          console.log("Erro ao salvar foto local:", e);
+          console.log("Erro ao atualizar foto no Firebase:", e);
           Alert.alert("Erro", "Não foi possível salvar a foto.");
         } finally {
           setUploading(false);
